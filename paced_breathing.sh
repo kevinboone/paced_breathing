@@ -34,9 +34,9 @@ use_tonegen=1
 #  takes some time to start and stop so, if we make the audio file as
 #  long as the breathing time, there's a chance that the sounds will
 #  overlap. The value of this setting depends on the speed of the host
-#  system and its load. 100 msec is probably a good starting point. 
+#  system and its load. 200 msec is probably a good starting point. 
 #  Longer is safer but, of course, there will be gaps in the audio.
-tone_gen_latency=100
+tone_gen_latency=200
 
 # Set the names of the generated audio files. Including the process ID
 #  ($$) in the name allows multiple users to use the utility concurrently,
@@ -113,7 +113,7 @@ function sleep_ms
 #  backspaces, but the behaviour of these is rather terminal-dependent.
 function draw_bargraph 
   {
-  msec=$1;
+  sec=$1;
   caption="$2"
   # Draw the outline which we will fill in. 
   echo -n "$caption"
@@ -127,7 +127,7 @@ function draw_bargraph
   #  specified number of millisceonds between each.
   for x in $(seq 1 $columns); do
     echo -n "#"
-    sleep_ms $msec
+    sleep $sec
   done
   echo "" 
   }
@@ -158,6 +158,8 @@ function ctrl_c
 (( in_msec_per_col = $breathe_in_time_msec / $columns ))
 (( out_msec_per_col = $breathe_out_time_msec / $columns ))
 
+in_sec_per_col=$(div $in_msec_per_col 1000)
+out_sec_per_col=$(div $out_msec_per_col 1000)
 
 if [ -n "$use_tonegen" ] ; then
 
@@ -188,10 +190,10 @@ while true ; do
   if [ -n "$use_tonegen" ] ; then
     aplay $rising_tone_file >& /dev/null & 
   fi
-  draw_bargraph $in_msec_per_col "IN " 
+  draw_bargraph $in_sec_per_col "IN " 
   if [ -n "$use_tonegen" ] ; then
     aplay $falling_tone_file >& /dev/null &
   fi
-  draw_bargraph $out_msec_per_col "OUT" 
+  draw_bargraph $out_sec_per_col "OUT" 
 done
 
